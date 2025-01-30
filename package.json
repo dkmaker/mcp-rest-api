@@ -1,6 +1,6 @@
 {
   "name": "dkmaker-mcp-rest-api",
-  "version": "0.4.0",
+  "version": null,
   "description": "A generic REST API tester for testing HTTP endpoints",
   "license": "MIT",
   "type": "module",
