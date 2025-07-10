@@ -2,30 +2,41 @@
 # Use the Node.js image with the required version for the project
 FROM node:18-alpine AS builder
 
+# Enable corepack to use pnpm
+RUN corepack enable
+
 # Set working directory
 WORKDIR /app
 
-# Copy package files to the working directory
-COPY package.json package-lock.json ./
+# Copy package files first
+COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies without running prepare script
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy all files to the working directory
 COPY . .
 
-# Build the TypeScript files
-RUN npm run build
+# Now run the build process (which includes prepare step)
+RUN pnpm run build
 
 # Create the final release image
 FROM node:18-alpine AS release
 
+# Enable corepack to use pnpm
+RUN corepack enable
+
 # Set working directory
 WORKDIR /app
 
-# Copy built files and necessary package information
-COPY --from=builder /app/build /app/build
-COPY --from=builder /app/package.json /app/package-lock.json /app/node_modules ./ 
+# Copy package files first
+COPY --from=builder /app/package.json /app/pnpm-lock.yaml ./
+
+# Install only production dependencies
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+
+# Copy built files
+COPY --from=builder /app/build ./build
 
 # Environment configuration for runtime (configured externally)
 ENV REST_BASE_URL=""

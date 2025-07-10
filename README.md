@@ -1,15 +1,20 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/dkmaker-mcp-rest-api-badge.png)](https://mseep.ai/app/dkmaker-mcp-rest-api)
-
 # MCP REST API Tester
+
+<div align="center">
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Package](https://img.shields.io/npm/v/dkmaker-mcp-rest-api.svg)](https://www.npmjs.com/package/dkmaker-mcp-rest-api)
 [![smithery badge](https://smithery.ai/badge/dkmaker-mcp-rest-api)](https://smithery.ai/server/dkmaker-mcp-rest-api)
 
-A TypeScript-based MCP server that enables testing of REST APIs through Cline. This tool allows you to test and interact with any REST API endpoints directly from your development environment.
+[![MseeP.ai Security Assessment](https://mseep.net/pr/dkmaker-mcp-rest-api-badge.png)](https://mseep.ai/app/dkmaker-mcp-rest-api)
 
 <a href="https://glama.ai/mcp/servers/izr2sp4rqo">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/izr2sp4rqo/badge?refresh=1234" />
+  <img width="300" height="150" src="https://glama.ai/mcp/servers/izr2sp4rqo/badge?refresh=1234" alt="Glama.ai Badge" />
 </a>
+
+</div>
+
+A TypeScript-based MCP server that enables testing of REST APIs through Cline. This tool allows you to test and interact with any REST API endpoints directly from your development environment.
 
 ## Installation
 
@@ -24,7 +29,7 @@ npx -y @smithery/cli install dkmaker-mcp-rest-api --client claude
 ### Installing Manually
 1. Install the package globally:
 ```bash
-npm install -g dkmaker-mcp-rest-api
+pnpm add -g dkmaker-mcp-rest-api
 ```
 
 2. Configure Cline Custom Instructions:
@@ -219,17 +224,17 @@ cd mcp-rest-api
 
 2. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 3. Build the project:
 ```bash
-npm run build
+pnpm run build
 ```
 
 For development with auto-rebuild:
 ```bash
-npm run watch
+pnpm run watch
 ```
 
 ## License

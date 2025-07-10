@@ -1,54 +1,60 @@
 {
-  "name": "dkmaker-mcp-rest-api",
-  "version": "0.4.0",
-  "description": "A generic REST API tester for testing HTTP endpoints",
-  "license": "MIT",
-  "type": "module",
-  "bin": {
-    "dkmaker-mcp-rest-api": "./build/index.js"
-  },
-  "files": [
-    "build",
-    "README.md",
-    "LICENSE"
-  ],
-  "scripts": {
-    "prebuild": "node scripts/build.js",
-    "build": "tsc",
-    "prepare": "npm run build",
-    "watch": "tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.4",
-    "axios": "^1.7.9"
-  },
-  "devDependencies": {
-    "@commitlint/cli": "^19.6.1",
-    "@commitlint/config-conventional": "^19.6.0",
-    "@types/node": "^20.11.24",
-    "typescript": "^5.3.3"
-  },
-  "keywords": [
-    "mcp",
-    "rest",
-    "api",
-    "http",
-    "testing",
-    "cline",
-    "development",
-    "typescript"
-  ],
-  "author": "zenturacp",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dkmaker/mcp-rest-api.git"
-  },
-  "bugs": {
-    "url": "https://github.com/dkmaker/mcp-rest-api/issues"
-  },
-  "homepage": "https://github.com/dkmaker/mcp-rest-api#readme",
-  "engines": {
-    "node": ">=18.0.0"
-  }
+	"name": "dkmaker-mcp-rest-api",
+	"version": "0.4.0",
+	"description": "A generic REST API tester for testing HTTP endpoints",
+	"license": "MIT",
+	"type": "module",
+	"bin": {
+		"dkmaker-mcp-rest-api": "./build/index.js"
+	},
+	"files": [
+		"build",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"prebuild": "node scripts/build.js",
+		"build": "tsc --build",
+		"prepare": "pnpm run build",
+		"watch": "tsc --watch --preserveWatchOutput",
+		"inspector": "pnpm dlx @modelcontextprotocol/inspector build/index.js",
+		"lint": "biome check --write",
+		"format": "biome format --write",
+		"check": "biome check",
+		"type-check": "tsc --noEmit --skipLibCheck",
+		"dev": "pnpm run watch",
+		"clean": "rm -rf build",
+		"rebuild": "pnpm run clean && pnpm run build"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.15.0",
+		"axios": "^1.10.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "1.9.4",
+		"@types/node": "^20.11.24",
+		"typescript": "^5.3.3"
+	},
+	"keywords": [
+		"mcp",
+		"rest",
+		"api",
+		"http",
+		"testing",
+		"cline",
+		"development",
+		"typescript"
+	],
+	"author": "zenturacp",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/dkmaker/mcp-rest-api.git"
+	},
+	"bugs": {
+		"url": "https://github.com/dkmaker/mcp-rest-api/issues"
+	},
+	"homepage": "https://github.com/dkmaker/mcp-rest-api#readme",
+	"engines": {
+		"node": ">=18.0.0"
+	}
 }

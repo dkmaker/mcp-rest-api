@@ -4,10 +4,11 @@ This document describes all available configuration options for the REST API tes
 
 ## Core Configuration
 
-### REST_BASE_URL (Required)
+### REST_BASE_URL (Optional)
 - Description: The base URL that all endpoint paths will be resolved against
 - Example: `http://localhost:3000` or `https://api.example.com`
-- Usage: All endpoint paths will be appended to this URL. For example, if REST_BASE_URL is `http://localhost:3000` and you use the endpoint `/api/users`, the full URL will be `http://localhost:3000/api/users`
+- Usage: If configured, all endpoint paths will be appended to this URL. For example, if REST_BASE_URL is `http://localhost:3000` and you use the endpoint `/api/users`, the full URL will be `http://localhost:3000/api/users`
+- If not configured: You must provide full URLs in the endpoint parameter (e.g., `https://api.example.com/users`) or use the `host` parameter
 
 ### REST_RESPONSE_SIZE_LIMIT (Optional)
 - Description: Maximum size in bytes for response data

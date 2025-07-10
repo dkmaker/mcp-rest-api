@@ -2,7 +2,7 @@ name: Publish Package
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, next ]
   workflow_dispatch:
 
 permissions:
@@ -23,8 +23,29 @@ jobs:
           node-version: '18.x'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint and format check
+        run: pnpm run check
 
       - name: Conventional Changelog Action
         id: changelog
@@ -40,12 +61,26 @@ jobs:
           skip-on-empty: false
           git-user-name: ${{ secrets.CHANGELOG_GIT_NAME }}
           git-user-email: ${{ secrets.CHANGELOG_GIT_EMAIL }}
+          preset: 'angular'
+          release-rules: |
+            [
+              {"type": "feat", "release": "minor"},
+              {"type": "fix", "release": "patch"},
+              {"type": "perf", "release": "patch"},
+              {"type": "chore", "release": "patch"},
+              {"type": "docs", "release": "patch"},
+              {"type": "style", "release": "patch"},
+              {"type": "refactor", "release": "patch"},
+              {"type": "test", "release": "patch"},
+              {"type": "ci", "release": "patch"},
+              {"type": "build", "release": "patch"}
+            ]
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
 
       - name: Create Release
-        if: steps.changelog.outputs.skipped == 'false'
+        if: steps.changelog.outputs.skipped == 'false' && github.ref == 'refs/heads/main'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -54,7 +89,18 @@ jobs:
             --notes "${{ steps.changelog.outputs.clean_changelog }}"
 
       - name: Publish to NPM
-        if: steps.changelog.outputs.skipped == 'false'
-        run: npm publish
+        if: steps.changelog.outputs.skipped == 'false' && github.ref == 'refs/heads/main'
+        run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Test Version Logic (Next Branch)
+        if: github.ref == 'refs/heads/next'
+        run: |
+          echo "=== Testing Version Logic on Next Branch ==="
+          echo "Current branch: ${{ github.ref }}"
+          echo "Version that would be generated: ${{ steps.changelog.outputs.version }}"
+          echo "Skip status: ${{ steps.changelog.outputs.skipped }}"
+          echo "Changelog content:"
+          echo "${{ steps.changelog.outputs.clean_changelog }}"
+          echo "=== End Test Output ==="
