@@ -37,7 +37,7 @@ This document describes all available configuration options for the REST API tes
 
 ## Authentication Configuration
 
-The tool supports three authentication methods. Configure one based on your API's requirements.
+The tool supports four authentication methods. Configure one based on your API's requirements.
 
 ### Basic Authentication
 - REST_BASIC_USERNAME: Username for Basic Auth
@@ -57,6 +57,42 @@ The tool supports three authentication methods. Configure one based on your API'
   REST_APIKEY_VALUE=your-api-key-here
   ```
 - Usage: When both are set, requests will include the specified header with the API key
+
+### Dynamic Bearer Token (Module)
+
+If your API requires a custom flow to obtain a token, you can configure a local JavaScript module that exports an async function.
+
+- AUTH_TOKEN_MODULE: Path to a local JS module file (`.mjs`/`.js`) that default-exports a function.
+  - The server will `import()` this module at runtime.
+  - The exported function is called with `{ axios, env }`:
+    - `axios` is the **preconfigured Axios instance** used by the server (includes `baseURL` and SSL settings)
+    - `env` is `process.env`
+  - The function must return a **string token**.
+
+Token refresh behavior:
+- If the token looks like a JWT and includes an `exp` claim, the server will refresh it automatically shortly before it expires.
+- If no `exp` is present, the token is cached for the lifetime of the server process.
+
+Example module (`./get-token.mjs`):
+
+```js
+export default async function getToken({ axios, env }) {
+  const res = await axios.post('/api/user/v1/auth/signin', {
+    email: env.AUTH_EMAIL,
+    password: env.AUTH_PASSWORD,
+  });
+  return res.data.token;
+}
+```
+
+Example configuration:
+
+```bash
+REST_BASE_URL=http://localhost:8080
+AUTH_TOKEN_MODULE=./get-token.mjs
+AUTH_EMAIL=xxx@yyy.com
+AUTH_PASSWORD=password@
+```
 
 ## Configuration Examples
 

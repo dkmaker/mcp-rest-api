@@ -29,6 +29,8 @@ const AUTH_BASIC_PASSWORD = process.env.AUTH_BASIC_PASSWORD;
 const AUTH_BEARER = process.env.AUTH_BEARER;
 const AUTH_APIKEY_HEADER_NAME = process.env.AUTH_APIKEY_HEADER_NAME;
 const AUTH_APIKEY_VALUE = process.env.AUTH_APIKEY_VALUE;
+// Dynamic bearer token acquisition via local JS module (optional)
+const AUTH_TOKEN_MODULE = process.env.AUTH_TOKEN_MODULE;
 const REST_ENABLE_SSL_VERIFY = process.env.REST_ENABLE_SSL_VERIFY !== 'false';
 
 interface EndpointArgs {
@@ -159,6 +161,115 @@ const isValidEndpointArgs = (args: any): args is EndpointArgs => {
 const hasBasicAuth = () => AUTH_BASIC_USERNAME && AUTH_BASIC_PASSWORD;
 const hasBearerAuth = () => !!AUTH_BEARER;
 const hasApiKeyAuth = () => AUTH_APIKEY_HEADER_NAME && AUTH_APIKEY_VALUE;
+const hasDynamicBearerAuth = () => !!AUTH_TOKEN_MODULE;
+
+const decodeBase64UrlToString = (input: string): string => {
+  const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = normalized.length % 4 === 0 ? '' : '='.repeat(4 - (normalized.length % 4));
+  return Buffer.from(normalized + pad, 'base64').toString('utf8');
+};
+
+const getJwtExpMs = (token: string): number | undefined => {
+  const parts = token.split('.');
+  if (parts.length < 2) return undefined;
+  try {
+    const payloadJson = decodeBase64UrlToString(parts[1]);
+    const payload = JSON.parse(payloadJson);
+    const exp = payload?.exp;
+    if (typeof exp !== 'number' || !Number.isFinite(exp)) return undefined;
+    return exp * 1000;
+  } catch {
+    return undefined;
+  }
+};
+
+class TokenProvider {
+  private token?: string;
+  private tokenExpiresAt?: number;
+  private inflight?: Promise<string>;
+  private tokenFn?: (ctx: { axios: AxiosInstance; env: NodeJS.ProcessEnv }) => Promise<string> | string;
+  private tokenFnInflight?: Promise<(ctx: { axios: AxiosInstance; env: NodeJS.ProcessEnv }) => Promise<string> | string>;
+
+  constructor(private axiosInstance: AxiosInstance) {}
+
+  invalidate() {
+    this.token = undefined;
+    this.tokenExpiresAt = undefined;
+  }
+
+  async getToken(forceRefresh: boolean = false): Promise<string> {
+    const now = Date.now();
+
+    // If we know the token's expiry, refresh slightly before it actually expires.
+    // This avoids edge cases where token expires mid-request.
+    const refreshSkewMs = 60_000;
+    const isValid =
+      this.token &&
+      (this.tokenExpiresAt === undefined || now < this.tokenExpiresAt - refreshSkewMs);
+
+    if (!forceRefresh && isValid) {
+      return this.token as string;
+    }
+
+    if (!forceRefresh && this.inflight) {
+      return await this.inflight;
+    }
+
+    this.inflight = this.acquireToken().finally(() => {
+      this.inflight = undefined;
+    });
+
+    const token = await this.inflight;
+    this.token = token;
+
+    const expMs = getJwtExpMs(token);
+    this.tokenExpiresAt = expMs;
+    return token;
+  }
+
+  private async acquireToken(): Promise<string> {
+    if (!AUTH_TOKEN_MODULE) {
+      throw new Error('Dynamic auth is enabled but AUTH_TOKEN_MODULE is not set');
+    }
+
+    const tokenFn = await this.getTokenFn();
+    const token = await tokenFn({ axios: this.axiosInstance, env: process.env });
+    const trimmed = String(token).trim();
+    if (!trimmed) {
+      throw new Error('AUTH_TOKEN_MODULE function returned empty token');
+    }
+    return trimmed;
+  }
+
+  private async getTokenFn(): Promise<
+    (ctx: { axios: AxiosInstance; env: NodeJS.ProcessEnv }) => Promise<string> | string
+  > {
+    if (this.tokenFn) return this.tokenFn;
+    if (this.tokenFnInflight) return await this.tokenFnInflight;
+
+    this.tokenFnInflight = (async () => {
+      const path = await import('node:path');
+      const url = await import('node:url');
+
+      const modulePath = path.isAbsolute(AUTH_TOKEN_MODULE!)
+        ? AUTH_TOKEN_MODULE!
+        : path.resolve(process.cwd(), AUTH_TOKEN_MODULE!);
+
+      const moduleUrl = url.pathToFileURL(modulePath).href;
+      const mod: any = await import(moduleUrl);
+      const fn = mod?.default;
+      if (typeof fn !== 'function') {
+        throw new Error('AUTH_TOKEN_MODULE must default-export a function');
+      }
+      this.tokenFn = fn;
+      return fn;
+    })().finally(() => {
+      this.tokenFnInflight = undefined;
+    });
+
+    return await this.tokenFnInflight;
+  }
+}
 
 // Collect custom headers from environment variables
 const getCustomHeaders = (): Record<string, string> => {
@@ -179,6 +290,7 @@ const getCustomHeaders = (): Record<string, string> => {
 class RestTester {
   private server!: Server;
   private axiosInstance!: AxiosInstance;
+  private tokenProvider?: TokenProvider;
 
   constructor() {
     this.setupServer();
@@ -206,6 +318,10 @@ class RestTester {
         rejectUnauthorized: false
       })
     });
+
+    if (hasDynamicBearerAuth()) {
+      this.tokenProvider = new TokenProvider(this.axiosInstance);
+    }
 
     this.setupToolHandlers();
     this.setupResourceHandlers();
@@ -294,6 +410,8 @@ class RestTester {
     'Bearer token authentication configured' :
   hasApiKeyAuth() ? 
     `API Key using header: ${AUTH_APIKEY_HEADER_NAME}` :
+  hasDynamicBearerAuth() ?
+    'Dynamic Bearer token authentication configured (module)' :
     'No authentication configured'
 } | ${(() => {
   const customHeaders = getCustomHeaders();
@@ -412,6 +530,12 @@ class RestTester {
           ...config.headers,
           [AUTH_APIKEY_HEADER_NAME as string]: AUTH_APIKEY_VALUE
         };
+      } else if (this.tokenProvider) {
+        const token = await this.tokenProvider.getToken(false);
+        config.headers = {
+          ...config.headers,
+          'Authorization': `Bearer ${token}`
+        };
       }
 
       try {
@@ -424,6 +548,7 @@ class RestTester {
         if (hasBasicAuth()) authMethod = 'basic';
         else if (hasBearerAuth()) authMethod = 'bearer';
         else if (hasApiKeyAuth()) authMethod = 'apikey';
+        else if (this.tokenProvider) authMethod = 'dynamic_bearer';
 
         // Prepare response object
         const responseObj: ResponseObject = {
