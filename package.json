@@ -24,7 +24,7 @@
     "axios": "^1.7.9"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.6.1",
+    "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^19.6.0",
     "@types/node": "^20.11.24",
     "typescript": "^5.3.3"
