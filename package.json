@@ -40,10 +40,7 @@
     "typescript"
   ],
   "author": "zenturacp",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/dkmaker/mcp-rest-api.git"
-  },
+  "repository": "https://github.com/dkmaker/mcp-rest-api.git",
   "bugs": {
     "url": "https://github.com/dkmaker/mcp-rest-api/issues"
   },
