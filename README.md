@@ -150,6 +150,13 @@ Note: Replace the environment variables with your actual values. Only configure 
 1. Basic Authentication (username/password)
 2. Bearer Token (if Basic Auth is not configured)
 3. API Key (if neither Basic Auth nor Bearer Token is configured)
+4. Dynamic Bearer Token (if none of the above are configured)
+
+Dynamic Bearer Token (module):
+- `AUTH_TOKEN_MODULE`: path to a local JS module that default-exports an async function
+- The server calls it with `{ axios, env, options }`
+  - The function must return the token string
+  - If the returned token is a JWT with an `exp` claim, it is refreshed automatically shortly before it expires
 
 ## Features
 
@@ -176,6 +183,7 @@ Note: Replace the environment variables with your actual values. Only configure 
   - Basic Authentication (username/password)
   - Bearer Token Authentication
   - API Key Authentication (custom header)
+  - Dynamic Bearer Token Authentication (module)
 
 ## Usage Examples
 

@@ -37,7 +37,7 @@ This document describes all available configuration options for the REST API tes
 
 ## Authentication Configuration
 
-The tool supports three authentication methods. Configure one based on your API's requirements.
+The tool supports four authentication methods. Configure one based on your API's requirements.
 
 ### Basic Authentication
 - REST_BASIC_USERNAME: Username for Basic Auth
@@ -57,6 +57,67 @@ The tool supports three authentication methods. Configure one based on your API'
   REST_APIKEY_VALUE=your-api-key-here
   ```
 - Usage: When both are set, requests will include the specified header with the API key
+
+### Dynamic Bearer Token (Module)
+
+If your API requires a custom flow to obtain a token, you can configure a local JavaScript module that exports an async function.
+
+- AUTH_TOKEN_MODULE: Path to a local JS module file (`.mjs`/`.js`) that default-exports a function.
+  - The server will `import()` this module at runtime.
+- The exported function is called with `{ axios, env, options }`:
+    - `axios` is the **preconfigured Axios instance** used by the server (includes `baseURL` and SSL settings)
+    - `env` is `process.env`
+    - `options` is the per-request `options` object from `test_request` (optional)
+  - The function must return a **string token**.
+
+Token refresh behavior:
+- If the token looks like a JWT and includes an `exp` claim, the server will refresh it automatically shortly before it expires.
+- If no `exp` is present, the token is cached for the lifetime of the server process.
+
+Example module (`./get-token.mjs`):
+
+```js
+export default async function getToken({ axios, env, options }) {
+  const res = await axios.post('/api/user/v1/auth/signin', {
+    email: options?.emailOverride ?? env.AUTH_EMAIL,
+    password: options?.passwordOverride ?? env.AUTH_PASSWORD,
+  });
+  return res.data.token;
+}
+```
+
+Per-request options (dynamic token module only):
+
+- `test_request.options` is a **free-form object**.
+- It is passed only to the token module as `ctx.options` and is not added to the upstream request headers.
+- When `options` is provided (non-empty), the server does not reuse cached/inflight tokens (to avoid mixing tokens across different option contexts).
+
+Example convention (implemented in `./get-token.mjs` below):
+
+- `options.emailOverride`
+- `options.passwordOverride`
+
+Example tool call:
+
+```typescript
+use_mcp_tool('rest-api', 'test_request', {
+  method: 'GET',
+  endpoint: '/users',
+  options: {
+    emailOverride: 'user1@example.com',
+    passwordOverride: 'secret'
+  }
+});
+```
+
+Example configuration:
+
+```bash
+REST_BASE_URL=http://localhost:8080
+AUTH_TOKEN_MODULE=./get-token.mjs
+AUTH_EMAIL=xxx@yyy.com
+AUTH_PASSWORD=password@
+```
 
 ## Configuration Examples
 
