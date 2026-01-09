@@ -9,5 +9,21 @@
   "homepage": "https://github.com/dkmaker/mcp-rest-api",
   "repository": "https://github.com/dkmaker/mcp-rest-api",
   "license": "MIT",
-  "keywords": ["mcp", "rest", "api", "http", "testing", "development"]
+  "keywords": ["mcp", "rest", "api", "http", "testing", "development"],
+  "mcpServers": {
+    "rest-api": {
+      "command": "npx",
+      "args": ["-y", "dkmaker-mcp-rest-api"],
+      "env": {
+        "REST_BASE_URL": "${REST_MCP_BASE_URL:-https://api.example.com}",
+        "AUTH_BEARER": "${REST_MCP_AUTH_BEARER:-}",
+        "AUTH_BASIC_USERNAME": "${REST_MCP_AUTH_USERNAME:-}",
+        "AUTH_BASIC_PASSWORD": "${REST_MCP_AUTH_PASSWORD:-}",
+        "AUTH_APIKEY_HEADER_NAME": "${REST_MCP_APIKEY_HEADER:-}",
+        "AUTH_APIKEY_VALUE": "${REST_MCP_APIKEY_VALUE:-}",
+        "REST_ENABLE_SSL_VERIFY": "${REST_MCP_SSL_VERIFY:-true}",
+        "REST_RESPONSE_SIZE_LIMIT": "${REST_MCP_RESPONSE_LIMIT:-10000}"
+      }
+    }
+  }
 }
