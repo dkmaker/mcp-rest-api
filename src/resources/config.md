@@ -64,9 +64,10 @@ If your API requires a custom flow to obtain a token, you can configure a local 
 
 - AUTH_TOKEN_MODULE: Path to a local JS module file (`.mjs`/`.js`) that default-exports a function.
   - The server will `import()` this module at runtime.
-  - The exported function is called with `{ axios, env }`:
+- The exported function is called with `{ axios, env, options }`:
     - `axios` is the **preconfigured Axios instance** used by the server (includes `baseURL` and SSL settings)
     - `env` is `process.env`
+    - `options` is the per-request `options` object from `test_request` (optional)
   - The function must return a **string token**.
 
 Token refresh behavior:
@@ -76,13 +77,37 @@ Token refresh behavior:
 Example module (`./get-token.mjs`):
 
 ```js
-export default async function getToken({ axios, env }) {
+export default async function getToken({ axios, env, options }) {
   const res = await axios.post('/api/user/v1/auth/signin', {
-    email: env.AUTH_EMAIL,
-    password: env.AUTH_PASSWORD,
+    email: options?.emailOverride ?? env.AUTH_EMAIL,
+    password: options?.passwordOverride ?? env.AUTH_PASSWORD,
   });
   return res.data.token;
 }
+```
+
+Per-request options (dynamic token module only):
+
+- `test_request.options` is a **free-form object**.
+- It is passed only to the token module as `ctx.options` and is not added to the upstream request headers.
+- When `options` is provided (non-empty), the server does not reuse cached/inflight tokens (to avoid mixing tokens across different option contexts).
+
+Example convention (implemented in `./get-token.mjs` below):
+
+- `options.emailOverride`
+- `options.passwordOverride`
+
+Example tool call:
+
+```typescript
+use_mcp_tool('rest-api', 'test_request', {
+  method: 'GET',
+  endpoint: '/users',
+  options: {
+    emailOverride: 'user1@example.com',
+    passwordOverride: 'secret'
+  }
+});
 ```
 
 Example configuration:

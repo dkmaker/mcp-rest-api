@@ -154,7 +154,7 @@ Note: Replace the environment variables with your actual values. Only configure 
 
 Dynamic Bearer Token (module):
 - `AUTH_TOKEN_MODULE`: path to a local JS module that default-exports an async function
-  - The server calls it with `{ axios, env }`
+- The server calls it with `{ axios, env, options }`
   - The function must return the token string
   - If the returned token is a JWT with an `exp` claim, it is refreshed automatically shortly before it expires
 

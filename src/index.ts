@@ -39,6 +39,8 @@ interface EndpointArgs {
   body?: any;
   headers?: Record<string, string>;
   host?: string;
+  // Free-form per-request options. Passed through to AUTH_TOKEN_MODULE as ctx.options.
+  options?: Record<string, any>;
 }
 
 interface ValidationResult {
@@ -187,8 +189,18 @@ class TokenProvider {
   private token?: string;
   private tokenExpiresAt?: number;
   private inflight?: Promise<string>;
-  private tokenFn?: (ctx: { axios: AxiosInstance; env: NodeJS.ProcessEnv }) => Promise<string> | string;
-  private tokenFnInflight?: Promise<(ctx: { axios: AxiosInstance; env: NodeJS.ProcessEnv }) => Promise<string> | string>;
+  private tokenFn?: (ctx: {
+    axios: AxiosInstance;
+    env: NodeJS.ProcessEnv;
+    options?: EndpointArgs['options'];
+  }) => Promise<string> | string;
+  private tokenFnInflight?: Promise<
+    (ctx: {
+      axios: AxiosInstance;
+      env: NodeJS.ProcessEnv;
+      options?: EndpointArgs['options'];
+    }) => Promise<string> | string
+  >;
 
   constructor(private axiosInstance: AxiosInstance) {}
 
@@ -197,8 +209,18 @@ class TokenProvider {
     this.tokenExpiresAt = undefined;
   }
 
-  async getToken(forceRefresh: boolean = false): Promise<string> {
+  async getToken(
+    forceRefresh: boolean = false,
+    options?: EndpointArgs['options']
+  ): Promise<string> {
     const now = Date.now();
+
+    // If per-request options are provided, treat them as a unique auth context.
+    // To avoid cross-request/cross-user leakage, do not reuse cached/inflight tokens.
+    const hasRequestOptions =
+      !!options &&
+      typeof options === 'object' &&
+      Object.keys(options).length > 0;
 
     // If we know the token's expiry, refresh slightly before it actually expires.
     // This avoids edge cases where token expires mid-request.
@@ -207,33 +229,42 @@ class TokenProvider {
       this.token &&
       (this.tokenExpiresAt === undefined || now < this.tokenExpiresAt - refreshSkewMs);
 
-    if (!forceRefresh && isValid) {
+    // If per-request options are provided, never return a cached token.
+    if (!forceRefresh && !hasRequestOptions && isValid) {
       return this.token as string;
     }
 
-    if (!forceRefresh && this.inflight) {
+    // Avoid sharing inflight token acquisition across different per-request option contexts.
+    if (!forceRefresh && !hasRequestOptions && this.inflight) {
       return await this.inflight;
     }
 
-    this.inflight = this.acquireToken().finally(() => {
-      this.inflight = undefined;
-    });
+    const tokenPromise = this.acquireToken(options);
+    if (!hasRequestOptions) {
+      this.inflight = tokenPromise.finally(() => {
+        this.inflight = undefined;
+      });
+    }
 
-    const token = await this.inflight;
-    this.token = token;
+    const token = await tokenPromise;
+    if (!hasRequestOptions) {
+      this.token = token;
+    }
 
     const expMs = getJwtExpMs(token);
-    this.tokenExpiresAt = expMs;
+    if (!hasRequestOptions) {
+      this.tokenExpiresAt = expMs;
+    }
     return token;
   }
 
-  private async acquireToken(): Promise<string> {
+  private async acquireToken(options?: EndpointArgs['options']): Promise<string> {
     if (!AUTH_TOKEN_MODULE) {
       throw new Error('Dynamic auth is enabled but AUTH_TOKEN_MODULE is not set');
     }
 
     const tokenFn = await this.getTokenFn();
-    const token = await tokenFn({ axios: this.axiosInstance, env: process.env });
+    const token = await tokenFn({ axios: this.axiosInstance, env: process.env, options });
     const trimmed = String(token).trim();
     if (!trimmed) {
       throw new Error('AUTH_TOKEN_MODULE function returned empty token');
@@ -242,7 +273,11 @@ class TokenProvider {
   }
 
   private async getTokenFn(): Promise<
-    (ctx: { axios: AxiosInstance; env: NodeJS.ProcessEnv }) => Promise<string> | string
+    (ctx: {
+      axios: AxiosInstance;
+      env: NodeJS.ProcessEnv;
+      options?: EndpointArgs['options'];
+    }) => Promise<string> | string
   > {
     if (this.tokenFn) return this.tokenFn;
     if (this.tokenFnInflight) return await this.tokenFnInflight;
@@ -464,6 +499,11 @@ class RestTester {
                 additionalProperties: {
                   type: 'string'
                 }
+              },
+              options: {
+                type: 'object',
+                description: 'Optional per-request options passed through to the dynamic bearer token module (AUTH_TOKEN_MODULE) as ctx.options. This object is free-form; its meaning is defined by your token module.',
+                additionalProperties: true
               }
             },
             required: ['method', 'endpoint'],
@@ -531,7 +571,7 @@ class RestTester {
           [AUTH_APIKEY_HEADER_NAME as string]: AUTH_APIKEY_VALUE
         };
       } else if (this.tokenProvider) {
-        const token = await this.tokenProvider.getToken(false);
+        const token = await this.tokenProvider.getToken(false, request.params.arguments.options);
         config.headers = {
           ...config.headers,
           'Authorization': `Bearer ${token}`
