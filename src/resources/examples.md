@@ -113,3 +113,96 @@ Example:
 # Or, for a single request:
 ✅ "host": "https://api.example.com", "endpoint": "/users"  # This will resolve to: https://api.example.com/users
 ```
+
+## File Upload Examples
+
+### Single File Upload
+Upload a single file to an API endpoint:
+
+```typescript
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/upload",
+  "files": [
+    {
+      "fieldName": "avatar",           // Form field name
+      "filePath": "./profile-pic.jpg"  // Local file path
+    }
+  ]
+});
+```
+
+### Multiple Files Upload
+Upload multiple files in a single request:
+
+```typescript
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/upload/multiple",
+  "files": [
+    {
+      "fieldName": "file1",
+      "filePath": "./document1.pdf"
+    },
+    {
+      "fieldName": "file2",
+      "filePath": "./document2.pdf"
+    },
+    {
+      "fieldName": "image",
+      "filePath": "./photo.png",
+      "fileName": "custom-name.png",    // Optional: override filename
+      "contentType": "image/png"        // Optional: set MIME type
+    }
+  ]
+});
+```
+
+### File Upload with Form Fields
+Combine file uploads with additional form data:
+
+```typescript
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/posts",
+  "files": [
+    {
+      "fieldName": "thumbnail",
+      "filePath": "./thumbnail.jpg"
+    }
+  ],
+  "formFields": {
+    "title": "My Blog Post",
+    "description": "A great article",
+    "category": "technology"
+  }
+});
+```
+
+### File Upload with JSON Body
+You can also include a body parameter alongside files. The body fields will be added to the form data:
+
+```typescript
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/upload/with-metadata",
+  "files": [
+    {
+      "fieldName": "attachment",
+      "filePath": "./report.pdf"
+    }
+  ],
+  "body": {
+    "uploadedBy": "user123",
+    "timestamp": "2025-01-15T10:30:00Z",
+    "tags": ["report", "q1"]
+  }
+});
+```
+
+### File Upload Constraints
+- **Maximum file size**: Default is 10MB per file (configurable via `FILE_UPLOAD_SIZE_LIMIT` environment variable)
+- **Path security**: File paths containing `..` (path traversal) are rejected for security
+- **Supported paths**: Both relative (e.g., `./file.txt`) and absolute (e.g., `/tmp/file.txt`) paths are supported
+- **File validation**: Files are validated for existence and size before upload
+- **Encoding**: When files are present, the request automatically uses `multipart/form-data` encoding

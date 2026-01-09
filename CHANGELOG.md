@@ -1,3 +1,28 @@
+## [0.5.0](https://github.com/qwang07/mcp-rest-api/compare/v0.4.0...v0.5.0) (2025-10-23)
+
+### Features
+
+* **file-upload**: add comprehensive file upload support with multipart/form-data ([2ae2535](https://github.com/qwang07/mcp-rest-api/commit/2ae2535))
+  - Upload single or multiple files via local file paths
+  - Support file + form fields + JSON body mixing
+  - Configurable file size limits via FILE_UPLOAD_SIZE_LIMIT (default: 10MB)
+  - Path traversal attack protection
+  - Modular file-utils.ts with validation and FormData creation
+  - 23 unit tests with TDD approach
+  - Complete documentation and examples
+
+### Documentation
+
+* Updated README.md with file upload features and examples
+* Added FILE_UPLOAD_SIZE_LIMIT configuration to config.md
+* Added comprehensive file upload examples to examples.md
+
+### Tests
+
+* Added 23 unit tests for file upload functionality
+* Test server for integration testing
+* End-to-end test suite
+
 ## [0.4.0](https://github.com/dkmaker/mcp-rest-api/compare/v0.3.0...v0.4.0) (2025-01-08)
 
 

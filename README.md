@@ -1,33 +1,30 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/dkmaker-mcp-rest-api-badge.png)](https://mseep.ai/app/dkmaker-mcp-rest-api)
-
-# MCP REST API Tester
+# MCP REST API Tester (Enhanced)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![NPM Package](https://img.shields.io/npm/v/dkmaker-mcp-rest-api.svg)](https://www.npmjs.com/package/dkmaker-mcp-rest-api)
-[![smithery badge](https://smithery.ai/badge/dkmaker-mcp-rest-api)](https://smithery.ai/server/dkmaker-mcp-rest-api)
+[![NPM Package](https://img.shields.io/npm/v/@qwang007/mcp-rest-api.svg)](https://www.npmjs.com/package/@qwang007/mcp-rest-api)
 
-A TypeScript-based MCP server that enables testing of REST APIs through Cline. This tool allows you to test and interact with any REST API endpoints directly from your development environment.
+> **📦 Enhanced Fork**: This is an enhanced version of [dkmaker-mcp-rest-api](https://github.com/dkmaker/mcp-rest-api) with added **file upload support**. Original project by [@zenturacp](https://github.com/zenturacp).
+>
+> **New in v0.5.0**: Full multipart/form-data file upload support! 🎉
 
-<a href="https://glama.ai/mcp/servers/izr2sp4rqo">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/izr2sp4rqo/badge?refresh=1234" />
-</a>
+A TypeScript-based MCP server that enables testing of REST APIs through Cline and Claude Desktop. This tool allows you to test and interact with any REST API endpoints directly from your development environment, including **uploading files**.
 
 ## Installation
 
-### Installing via Smithery
-
-To install REST API Tester for Claude Desktop automatically via [Smithery](https://smithery.ai/server/dkmaker-mcp-rest-api):
+### Install via npm
 
 ```bash
-npx -y @smithery/cli install dkmaker-mcp-rest-api --client claude
+npm install -g @qwang007/mcp-rest-api
 ```
 
-### Installing Manually
-1. Install the package globally:
+Or use with npx (no installation required):
+
 ```bash
-npm install -g dkmaker-mcp-rest-api
+npx @qwang007/mcp-rest-api
 ```
 
-2. Configure Cline Custom Instructions:
+### Manual Setup
+
+1. Configure Cline Custom Instructions:
 
 To ensure Cline understands how to effectively use this tool, add the following to your Cline custom instructions (Settings > Custom Instructions):
 
@@ -73,7 +70,7 @@ Access these resources to understand usage, response formats, and configuration 
 - Restart server after configuration changes
 ```
 
-3. Add the server to your MCP configuration:
+2. Add the server to your MCP configuration:
 
 While these instructions are for Cline, the server should work with any MCP implementation. Configure based on your operating system:
 
@@ -87,7 +84,7 @@ Add to `C:\Users\<YourUsername>\AppData\Roaming\Code\User\globalStorage\saoudriz
     "rest-api": {
       "command": "node",
       "args": [
-        "C:/Users/<YourUsername>/AppData/Roaming/npm/node_modules/dkmaker-mcp-rest-api/build/index.js"
+        "C:/Users/<YourUsername>/AppData/Roaming/npm/node_modules/@qwang007/mcp-rest-api/build/index.js"
       ],
       "env": {
         "REST_BASE_URL": "https://api.example.com",
@@ -103,6 +100,8 @@ Add to `C:\Users\<YourUsername>\AppData\Roaming\Code\User\globalStorage\saoudriz
         "REST_ENABLE_SSL_VERIFY": "false", // Set to false to disable SSL verification for self-signed certificates
         // Response Size Limit (optional, defaults to 10000 bytes)
         "REST_RESPONSE_SIZE_LIMIT": "10000", // Maximum response size in bytes
+        // File Upload Size Limit (optional, defaults to 10485760 bytes = 10MB)
+        "FILE_UPLOAD_SIZE_LIMIT": "52428800", // Maximum file upload size in bytes (50MB)
         // Custom Headers (optional)
         "HEADER_X-API-Version": "2.0",
         "HEADER_Custom-Client": "my-client",
@@ -122,7 +121,7 @@ Add to `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude
       "command": "npx",
       "args": [
         "-y",
-        "dkmaker-mcp-rest-api"
+        "@qwang007/mcp-rest-api"
       ],
       "env": {
         "REST_BASE_URL": "https://api.example.com",
@@ -136,6 +135,8 @@ Add to `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude
         "AUTH_APIKEY_VALUE": "your-api-key",
         // SSL Verification (enabled by default)
         "REST_ENABLE_SSL_VERIFY": "false", // Set to false to disable SSL verification for self-signed certificates
+        // File Upload Size Limit (optional, defaults to 10485760 bytes = 10MB)
+        "FILE_UPLOAD_SIZE_LIMIT": "52428800", // Maximum file upload size in bytes (50MB)
         // Custom Headers (optional)
         "HEADER_X-API-Version": "2.0",
         "HEADER_Custom-Client": "my-client",
@@ -155,6 +156,13 @@ Note: Replace the environment variables with your actual values. Only configure 
 
 - Test REST API endpoints with different HTTP methods
 - Support for GET, POST, PUT, DELETE, and PATCH requests
+- **File Upload Support**:
+  - Upload single or multiple files in one request
+  - Multipart/form-data encoding
+  - Customizable field names, filenames, and content types
+  - Combined file + form field uploads
+  - Configurable file size limits (default: 10MB per file)
+  - Path traversal protection for security
 - Detailed response information including status, headers, and body
 - Custom Headers:
   - Global headers via HEADER_* environment variables
@@ -205,6 +213,34 @@ use_mcp_tool('rest-api', 'test_request', {
   "headers": {
     "Accept-Language": "en-US",
     "X-Custom-Header": "custom-value"
+  }
+});
+
+// Upload a file
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/upload",
+  "files": [
+    {
+      "fieldName": "avatar",
+      "filePath": "./profile-pic.jpg"
+    }
+  ]
+});
+
+// Upload multiple files with form fields
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/posts",
+  "files": [
+    {
+      "fieldName": "thumbnail",
+      "filePath": "./image.png"
+    }
+  ],
+  "formFields": {
+    "title": "My Post",
+    "description": "Post description"
   }
 });
 ```
