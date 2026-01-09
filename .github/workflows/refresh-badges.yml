@@ -15,5 +15,5 @@ jobs:
       - name: Refresh badges
         uses: b3b00/refreshBadgesAction@v1.0.7
         with:
-          repository: 'zenturacp/mcp-rest-api'
+          repository: 'dkmaker/mcp-rest-api'
           branch: 'main'

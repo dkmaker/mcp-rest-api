@@ -3,7 +3,6 @@
 # MCP REST API Tester
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Package](https://img.shields.io/npm/v/dkmaker-mcp-rest-api.svg)](https://www.npmjs.com/package/dkmaker-mcp-rest-api)
-[![smithery badge](https://smithery.ai/badge/dkmaker-mcp-rest-api)](https://smithery.ai/server/dkmaker-mcp-rest-api)
 
 A TypeScript-based MCP server that enables testing of REST APIs through Cline. This tool allows you to test and interact with any REST API endpoints directly from your development environment.
 
@@ -13,21 +12,14 @@ A TypeScript-based MCP server that enables testing of REST APIs through Cline. T
 
 ## Installation
 
-### Installing via Smithery
-
-To install REST API Tester for Claude Desktop automatically via [Smithery](https://smithery.ai/server/dkmaker-mcp-rest-api):
-
-```bash
-npx -y @smithery/cli install dkmaker-mcp-rest-api --client claude
-```
-
-### Installing Manually
-1. Install the package globally:
+Install the package globally:
 ```bash
 npm install -g dkmaker-mcp-rest-api
 ```
 
-2. Configure Cline Custom Instructions:
+## Configuration
+
+### Cline Custom Instructions
 
 To ensure Cline understands how to effectively use this tool, add the following to your Cline custom instructions (Settings > Custom Instructions):
 
@@ -73,7 +65,7 @@ Access these resources to understand usage, response formats, and configuration 
 - Restart server after configuration changes
 ```
 
-3. Add the server to your MCP configuration:
+### MCP Server Configuration
 
 While these instructions are for Cline, the server should work with any MCP implementation. Configure based on your operating system:
 
