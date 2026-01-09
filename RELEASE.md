@@ -117,11 +117,10 @@ gh release create v0.4.1 --generate-notes
 
 | File | Purpose |
 |------|---------|
-| `release-please-config.json` | Release Please settings |
+| `release-please-config.json` | Release Please settings (includes changelog sections) |
 | `.release-please-manifest.json` | Current version tracker |
 | `.github/workflows/release-please.yml` | Creates/updates Release PR |
 | `.github/workflows/npm-publish.yml` | Publishes to NPM on release |
-| `.github/conventional-changelog.config.cjs` | Changelog formatting |
 | `commitlint.config.js` | Commit message validation |
 
 ## Version Numbering
