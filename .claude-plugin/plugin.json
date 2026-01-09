@@ -1,0 +1,13 @@
+{
+  "name": "mcp-rest-api",
+  "version": "0.4.0",
+  "description": "REST API tester MCP server - test HTTP endpoints directly from Claude Code",
+  "author": {
+    "name": "Christian Pedersen",
+    "email": "christian@dkmaker.xyz"
+  },
+  "homepage": "https://github.com/dkmaker/mcp-rest-api",
+  "repository": "https://github.com/dkmaker/mcp-rest-api",
+  "license": "MIT",
+  "keywords": ["mcp", "rest", "api", "http", "testing", "development"]
+}

@@ -10,12 +10,65 @@ A TypeScript-based MCP server that enables testing of REST APIs through Claude, 
 
 ## Installation
 
+Choose one of the following methods:
+
+### Option 1: Claude Code Plugin (Recommended)
+
+Install via the my-claude-plugins marketplace for automatic configuration:
+
+```bash
+# In Claude Code
+/plugin marketplace add dkmaker/my-claude-plugins
+/plugin install mcp-rest-api@my-claude-plugins
+```
+
+Then configure with environment variables (see [PLUGIN.md](PLUGIN.md) for details):
+
+```bash
+export REST_MCP_BASE_URL="https://your-api.com"
+export REST_MCP_AUTH_BEARER="your-token"
+claude
+```
+
+### Option 2: Manual MCP Server Configuration
+
+Add the MCP server directly using the `claude mcp add` command:
+
+```bash
+# Basic setup (no authentication)
+claude mcp add --transport stdio rest-api -- npx -y dkmaker-mcp-rest-api
+
+# With Bearer token authentication
+claude mcp add --transport stdio \
+  --env REST_BASE_URL=https://api.example.com \
+  --env AUTH_BEARER=your-token \
+  rest-api -- npx -y dkmaker-mcp-rest-api
+
+# With Basic authentication
+claude mcp add --transport stdio \
+  --env REST_BASE_URL=https://api.example.com \
+  --env AUTH_BASIC_USERNAME=admin \
+  --env AUTH_BASIC_PASSWORD=secret \
+  rest-api -- npx -y dkmaker-mcp-rest-api
+
+# With API Key authentication
+claude mcp add --transport stdio \
+  --env REST_BASE_URL=https://api.example.com \
+  --env AUTH_APIKEY_HEADER_NAME=X-API-Key \
+  --env AUTH_APIKEY_VALUE=your-key \
+  rest-api -- npx -y dkmaker-mcp-rest-api
+```
+
+### Option 3: NPM Global Install (For Cline and other MCP clients)
+
 Install the package globally:
 ```bash
 npm install -g dkmaker-mcp-rest-api
 ```
 
-## Configuration
+Then configure your MCP client. See the [Configuration](#configuration) section below for client-specific setup.
+
+## Configuration for Cline and Other MCP Clients
 
 ### Cline Custom Instructions
 
