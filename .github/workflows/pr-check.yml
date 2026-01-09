@@ -1,0 +1,93 @@
+name: PR Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+
+jobs:
+  # Fast validation - commits, build, tests
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate Conventional Commits
+        run: npx commitlint --from ${{ github.event.pull_request.base.sha }} --to ${{ github.event.pull_request.head.sha }} --verbose
+
+      - name: Build
+        run: npm run build
+
+      - name: Run Tests
+        run: |
+          if [ -f "package.json" ] && grep -q "\"test\":" "package.json"; then
+            npm test
+          else
+            echo "No test script found in package.json"
+          fi
+
+  # Claude Code review - runs after validation passes
+  review:
+    runs-on: ubuntu-latest
+    needs: validate
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Claude Code Review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          track_progress: true
+
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
+
+            Perform a comprehensive code review with the following focus areas:
+
+            ## 1. Release Workflow Compliance
+
+            This project uses Release Please with Conventional Commits.
+
+            **Version Bump Rules:**
+            - `feat:` → Minor version bump (0.4.0 → 0.5.0)
+            - `fix:`, `perf:`, `refactor:` → Patch version bump
+            - `docs:`, `test:`, `ci:`, `build:`, `chore:`, `style:` → No version bump
+
+            Note: Commitlint already validated the commit format, so just verify
+            the commits use appropriate types for the changes made.
+
+            ## 2. Code Quality
+            - Clean code principles
+            - Proper error handling
+            - Code readability
+
+            ## 3. Security
+            - Check for vulnerabilities
+            - No secrets in code
+
+            ## 4. Testing
+            - Adequate test coverage for new features
+
+            ## 5. Documentation
+            - README updates for user-facing changes
+
+            Provide your review with specific feedback.
