@@ -169,7 +169,7 @@ claude
 ```bash
 # Configure for production
 export REST_MCP_BASE_URL="https://api.production.com"
-export REST_MCP_AUTH_BEARER="prod-bearer-token-xyz"
+export REST_MCP_AUTH_BEARER="YOUR_BEARER_TOKEN_HERE"
 export REST_MCP_SSL_VERIFY="true"
 
 claude
@@ -179,8 +179,8 @@ claude
 
 ```bash
 export REST_MCP_BASE_URL="https://api.example.com"
-export REST_MCP_AUTH_USERNAME="admin"
-export REST_MCP_AUTH_PASSWORD="secret"
+export REST_MCP_AUTH_USERNAME="YOUR_USERNAME_HERE"
+export REST_MCP_AUTH_PASSWORD="YOUR_PASSWORD_HERE"
 
 claude
 ```
@@ -190,7 +190,7 @@ claude
 ```bash
 export REST_MCP_BASE_URL="https://api.example.com"
 export REST_MCP_APIKEY_HEADER="X-API-Key"
-export REST_MCP_APIKEY_VALUE="YOUR_API_KEY_HERE-here"
+export REST_MCP_APIKEY_VALUE="YOUR_API_KEY_HERE"
 
 claude
 ```
@@ -211,7 +211,7 @@ Once installed and configured, ask Claude to test REST endpoints:
 
 ```
 Test the GET /users endpoint
-Make a POST request to /auth/login with {"email": "test@example.com", "YOUR_PASSWORD_HERE": "secret"}
+Make a POST request to /auth/login with {"email": "test@example.com", "password": "your-password"}
 What does the /api/status endpoint return?
 Check if the /health endpoint is responding
 Send a PUT request to /users/123 to update the user
