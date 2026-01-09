@@ -33,15 +33,15 @@ Copy this template to your settings file and uncomment/configure the variables y
     // Authentication - choose ONE method:
 
     // Option 1: Bearer Token
-    // "REST_MCP_AUTH_BEARER": "your-bearer-token",
+    // "REST_MCP_AUTH_BEARER": "YOUR_BEARER_TOKEN_HERE",
 
     // Option 2: Basic Auth
-    // "REST_MCP_AUTH_USERNAME": "your-username",
-    // "REST_MCP_AUTH_PASSWORD": "your-password",
+    // "REST_MCP_AUTH_USERNAME": "YOUR_USERNAME_HERE",
+    // "REST_MCP_AUTH_PASSWORD": "YOUR_PASSWORD_HERE",
 
     // Option 3: API Key
     // "REST_MCP_APIKEY_HEADER": "X-API-Key",
-    // "REST_MCP_APIKEY_VALUE": "your-api-key",
+    // "REST_MCP_APIKEY_VALUE": "YOUR_API_KEY_HERE",
 
     // Optional settings:
     // "REST_MCP_SSL_VERIFY": "true",
@@ -62,7 +62,7 @@ Set environment variables before starting Claude Code:
 ```bash
 # In your ~/.bashrc or ~/.zshrc
 export REST_MCP_BASE_URL="https://your-api.com"
-export REST_MCP_AUTH_BEARER="your-bearer-token"
+export REST_MCP_AUTH_BEARER="YOUR_BEARER_TOKEN_HERE"
 
 # Or for one session
 REST_MCP_BASE_URL="http://localhost:3000" claude
@@ -80,15 +80,15 @@ Edit `.claude/settings.json` in your project and paste this template:
     // Authentication - choose ONE method:
 
     // Option 1: Bearer Token
-    // "REST_MCP_AUTH_BEARER": "your-bearer-token",
+    // "REST_MCP_AUTH_BEARER": "YOUR_BEARER_TOKEN_HERE",
 
     // Option 2: Basic Auth
-    "REST_MCP_AUTH_USERNAME": "admin",
-    "REST_MCP_AUTH_PASSWORD": "dev-password",
+    "REST_MCP_AUTH_USERNAME": "YOUR_USERNAME_HERE",
+    "REST_MCP_AUTH_PASSWORD": "YOUR_PASSWORD_HERE",
 
     // Option 3: API Key
     // "REST_MCP_APIKEY_HEADER": "X-API-Key",
-    // "REST_MCP_APIKEY_VALUE": "your-api-key",
+    // "REST_MCP_APIKEY_VALUE": "YOUR_API_KEY_HERE",
 
     // Optional settings:
     // "REST_MCP_SSL_VERIFY": "false",
@@ -109,15 +109,15 @@ Edit `~/.claude/settings.json` and paste this template:
     // Authentication - choose ONE method:
 
     // Option 1: Bearer Token
-    "REST_MCP_AUTH_BEARER": "your-production-token",
+    "REST_MCP_AUTH_BEARER": "YOUR_PRODUCTION_TOKEN_HERE",
 
     // Option 2: Basic Auth
-    // "REST_MCP_AUTH_USERNAME": "username",
-    // "REST_MCP_AUTH_PASSWORD": "password",
+    // "REST_MCP_AUTH_USERNAME": "YOUR_USERNAME_HERE",
+    // "REST_MCP_AUTH_PASSWORD": "YOUR_PASSWORD_HERE",
 
     // Option 3: API Key
     // "REST_MCP_APIKEY_HEADER": "X-API-Key",
-    // "REST_MCP_APIKEY_VALUE": "your-key",
+    // "REST_MCP_APIKEY_VALUE": "YOUR_API_KEY_HERE",
 
     // Optional settings:
     "REST_MCP_SSL_VERIFY": "true",
@@ -134,8 +134,8 @@ All variables use the `REST_MCP_` prefix to avoid naming conflicts.
 |----------|-------------------|-------------|---------|
 | `REST_MCP_BASE_URL` | `REST_BASE_URL` | Base URL for API requests | `https://api.example.com` |
 | `REST_MCP_AUTH_BEARER` | `AUTH_BEARER` | Bearer token authentication | None |
-| `REST_MCP_AUTH_USERNAME` | `AUTH_BASIC_USERNAME` | Basic auth username | None |
-| `REST_MCP_AUTH_PASSWORD` | `AUTH_BASIC_PASSWORD` | Basic auth password | None |
+| `REST_MCP_AUTH_USERNAME` | `AUTH_BASIC_USERNAME` | Basic auth YOUR_USERNAME_HERE | None |
+| `REST_MCP_AUTH_PASSWORD` | `AUTH_BASIC_PASSWORD` | Basic auth YOUR_PASSWORD_HERE | None |
 | `REST_MCP_APIKEY_HEADER` | `AUTH_APIKEY_HEADER_NAME` | API key header name | None |
 | `REST_MCP_APIKEY_VALUE` | `AUTH_APIKEY_VALUE` | API key value | None |
 | `REST_MCP_SSL_VERIFY` | `REST_ENABLE_SSL_VERIFY` | Enable SSL verification | `true` |
@@ -161,7 +161,7 @@ claude
 
 # Ask Claude to test endpoints
 > Test the GET /users endpoint
-> Make a POST to /auth/login with email and password
+> Make a POST to /auth/login with email and YOUR_PASSWORD_HERE
 ```
 
 ### Testing a Production API
@@ -190,7 +190,7 @@ claude
 ```bash
 export REST_MCP_BASE_URL="https://api.example.com"
 export REST_MCP_APIKEY_HEADER="X-API-Key"
-export REST_MCP_APIKEY_VALUE="your-api-key-here"
+export REST_MCP_APIKEY_VALUE="YOUR_API_KEY_HERE-here"
 
 claude
 ```
@@ -211,7 +211,7 @@ Once installed and configured, ask Claude to test REST endpoints:
 
 ```
 Test the GET /users endpoint
-Make a POST request to /auth/login with {"email": "test@example.com", "password": "secret"}
+Make a POST request to /auth/login with {"email": "test@example.com", "YOUR_PASSWORD_HERE": "secret"}
 What does the /api/status endpoint return?
 Check if the /health endpoint is responding
 Send a PUT request to /users/123 to update the user

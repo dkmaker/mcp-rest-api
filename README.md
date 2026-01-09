@@ -2,7 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Package](https://img.shields.io/npm/v/dkmaker-mcp-rest-api.svg)](https://www.npmjs.com/package/dkmaker-mcp-rest-api)
 
-A TypeScript-based MCP server that enables testing of REST APIs through Claude, Cline and other MCP clients. This tool allows you to test and interact with any REST API endpoints directly from your development environment.
+A TypeScript-based MCP server that enables testing of REST APIs through Claude Code, Cline, and other MCP clients. This tool allows you to test and interact with any REST API endpoints directly from your development environment.
 
 <a href="https://glama.ai/mcp/servers/izr2sp4rqo">
   <img width="380" height="200" src="https://glama.ai/mcp/servers/izr2sp4rqo/badge?refresh=1234" />
