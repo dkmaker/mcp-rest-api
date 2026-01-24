@@ -11,19 +11,30 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import axios, { AxiosInstance, AxiosRequestConfig, Method } from 'axios';
 import { VERSION, SERVER_NAME } from './version.js';
+import { FileUpload, validateFiles, createFormData } from './file-utils.js';
 
 if (!process.env.REST_BASE_URL) {
   throw new Error('REST_BASE_URL environment variable is required');
 }
 
 // Default response size limit: 10KB (10000 bytes)
-const RESPONSE_SIZE_LIMIT = process.env.REST_RESPONSE_SIZE_LIMIT 
+const RESPONSE_SIZE_LIMIT = process.env.REST_RESPONSE_SIZE_LIMIT
   ? parseInt(process.env.REST_RESPONSE_SIZE_LIMIT, 10)
   : 10000;
 
 if (isNaN(RESPONSE_SIZE_LIMIT) || RESPONSE_SIZE_LIMIT <= 0) {
   throw new Error('REST_RESPONSE_SIZE_LIMIT must be a positive number');
 }
+
+// Default file upload size limit: 10MB (10485760 bytes)
+const FILE_UPLOAD_SIZE_LIMIT = process.env.FILE_UPLOAD_SIZE_LIMIT
+  ? parseInt(process.env.FILE_UPLOAD_SIZE_LIMIT, 10)
+  : 10 * 1024 * 1024;
+
+if (isNaN(FILE_UPLOAD_SIZE_LIMIT) || FILE_UPLOAD_SIZE_LIMIT <= 0) {
+  throw new Error('FILE_UPLOAD_SIZE_LIMIT must be a positive number');
+}
+
 const AUTH_BASIC_USERNAME = process.env.AUTH_BASIC_USERNAME;
 const AUTH_BASIC_PASSWORD = process.env.AUTH_BASIC_PASSWORD;
 const AUTH_BEARER = process.env.AUTH_BEARER;
@@ -37,6 +48,8 @@ interface EndpointArgs {
   body?: any;
   headers?: Record<string, string>;
   host?: string;
+  files?: FileUpload[];
+  formFields?: Record<string, string>;
 }
 
 interface ValidationResult {
@@ -50,23 +63,23 @@ interface ValidationResult {
   };
 }
 
-// Function to sanitize headers by removing sensitive values and non-approved headers
+// Function to sanitize headers by redacting sensitive authentication values
 const sanitizeHeaders = (
   headers: Record<string, any>,
   isFromOptionalParams: boolean = false
 ): Record<string, any> => {
   const sanitized: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(headers)) {
     const lowerKey = key.toLowerCase();
-    
-    // Always include headers from optional parameters
+
+    // Always include headers from optional parameters (user-specified request headers)
     if (isFromOptionalParams) {
       sanitized[key] = value;
       continue;
     }
-    
-    // Handle authentication headers
+
+    // Redact authentication headers only
     if (
       lowerKey === 'authorization' ||
       (AUTH_APIKEY_HEADER_NAME && lowerKey === AUTH_APIKEY_HEADER_NAME.toLowerCase())
@@ -74,27 +87,11 @@ const sanitizeHeaders = (
       sanitized[key] = '[REDACTED]';
       continue;
     }
-    
-    // For headers from config/env
-    const customHeaders = getCustomHeaders();
-    if (key in customHeaders) {
-      // Show value only for headers that are in the approved list
-      const safeHeaders = new Set([
-        'accept',
-        'accept-language',
-        'content-type',
-        'user-agent',
-        'cache-control',
-        'if-match',
-        'if-none-match',
-        'if-modified-since',
-        'if-unmodified-since'
-      ]);
-      const lowerKey = key.toLowerCase();
-      sanitized[key] = safeHeaders.has(lowerKey) ? value : '[REDACTED]';
-    }
+
+    // Include all other headers
+    sanitized[key] = value;
   }
-  
+
   return sanitized;
 };
 
@@ -346,6 +343,39 @@ class RestTester {
                 additionalProperties: {
                   type: 'string'
                 }
+              },
+              files: {
+                type: 'array',
+                description: `Optional array of files to upload. Supports multi-file upload with customizable field names. Maximum file size: ${FILE_UPLOAD_SIZE_LIMIT} bytes (${(FILE_UPLOAD_SIZE_LIMIT / (1024 * 1024)).toFixed(1)}MB). When files are provided, the request will use multipart/form-data encoding.`,
+                items: {
+                  type: 'object',
+                  properties: {
+                    fieldName: {
+                      type: 'string',
+                      description: 'The form field name for this file (e.g., "avatar", "files[]")'
+                    },
+                    filePath: {
+                      type: 'string',
+                      description: 'Local file system path to the file to upload. Must be a valid readable file path.'
+                    },
+                    fileName: {
+                      type: 'string',
+                      description: 'Optional: Custom filename to use when uploading (overrides the actual filename)'
+                    },
+                    contentType: {
+                      type: 'string',
+                      description: 'Optional: MIME type of the file (e.g., "image/png", "application/pdf")'
+                    }
+                  },
+                  required: ['fieldName', 'filePath']
+                }
+              },
+              formFields: {
+                type: 'object',
+                description: 'Optional form fields to include alongside file uploads. Used when sending multipart/form-data with additional text fields.',
+                additionalProperties: {
+                  type: 'string'
+                }
               }
             },
             required: ['method', 'endpoint'],
@@ -371,7 +401,7 @@ class RestTester {
 
       // Ensure endpoint starts with / and remove any trailing slashes
       const normalizedEndpoint = `/${request.params.arguments.endpoint.replace(/^\/+|\/+$/g, '')}`;
-      
+
       const fullUrl = `${request.params.arguments.host || process.env.REST_BASE_URL}${normalizedEndpoint}`;
       // Initialize request config
       const config: AxiosRequestConfig = {
@@ -380,8 +410,28 @@ class RestTester {
           headers: {},
         };
 
-      // Add request body for POST/PUT/PATCH
-      if (['POST', 'PUT', 'PATCH'].includes(request.params.arguments.method) && request.params.arguments.body) {
+      // Handle file uploads
+      if (request.params.arguments.files && request.params.arguments.files.length > 0) {
+        // Validate all files
+        await validateFiles(request.params.arguments.files, FILE_UPLOAD_SIZE_LIMIT);
+
+        // Create FormData with files, formFields, and body
+        const formData = await createFormData(
+          request.params.arguments.files,
+          request.params.arguments.formFields,
+          request.params.arguments.body
+        );
+
+        config.data = formData;
+
+        // Merge FormData headers (content-type with boundary)
+        const formHeaders = formData.getHeaders();
+        config.headers = {
+          ...config.headers,
+          ...formHeaders
+        };
+      } else if (['POST', 'PUT', 'PATCH'].includes(request.params.arguments.method) && request.params.arguments.body) {
+        // Add request body for POST/PUT/PATCH (non-file uploads)
         config.data = request.params.arguments.body;
       }
 

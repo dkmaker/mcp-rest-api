@@ -17,16 +17,24 @@
     "build": "tsc",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "inspector": "npx @modelcontextprotocol/inspector build/index.js"
+    "inspector": "npx @modelcontextprotocol/inspector build/index.js",
+    "test": "node --test test/**/*.test.js",
+    "test:watch": "node --test --watch test/**/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage test/**/*.test.js",
+    "test:server": "node test/test-server.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
-    "axios": "^1.7.9"
+    "axios": "^1.7.9",
+    "form-data": "^4.0.1"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.6.1",
     "@commitlint/config-conventional": "^19.6.0",
+    "@types/form-data": "^2.5.0",
     "@types/node": "^20.11.24",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
     "typescript": "^5.3.3"
   },
   "keywords": [
@@ -37,7 +45,9 @@
     "testing",
     "cline",
     "development",
-    "typescript"
+    "typescript",
+    "file-upload",
+    "multipart"
   ],
   "author": "zenturacp",
   "repository": "https://github.com/dkmaker/mcp-rest-api.git",

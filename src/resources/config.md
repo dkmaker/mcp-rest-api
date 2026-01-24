@@ -21,6 +21,13 @@ This document describes all available configuration options for the REST API tes
 - Values: Set to `false` to disable SSL verification for self-signed certificates
 - Usage: Disable when testing APIs with self-signed certificates in development environments
 
+### FILE_UPLOAD_SIZE_LIMIT (Optional)
+- Description: Maximum size in bytes for individual file uploads
+- Default: 10485760 (10MB)
+- Example: `52428800` for 50MB limit, `104857600` for 100MB limit
+- Usage: Controls the maximum size of files that can be uploaded via the `files` parameter. Files exceeding this limit will be rejected before upload. Set this based on your API's file size limits and available system memory.
+- Security: Helps prevent memory exhaustion and abuse by limiting upload sizes
+
 ## Custom Headers Configuration
 
 ### Custom Headers (Optional)
@@ -93,6 +100,14 @@ REST_BASE_URL=https://api.example.com
 HEADER_X-API-Version=2.0
 HEADER_Custom-Client=my-client
 HEADER_Accept=application/json
+```
+
+### API with File Upload Support
+```bash
+REST_BASE_URL=https://api.example.com
+REST_BEARER=your-bearer-token
+FILE_UPLOAD_SIZE_LIMIT=52428800  # 50MB file upload limit
+REST_RESPONSE_SIZE_LIMIT=100000   # 100KB response limit (larger for upload confirmations)
 ```
 
 ## Changing Configuration

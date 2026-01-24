@@ -93,6 +93,8 @@ Add to `C:\Users\<YourUsername>\AppData\Roaming\Code\User\globalStorage\saoudriz
         "REST_ENABLE_SSL_VERIFY": "false", // Set to false to disable SSL verification for self-signed certificates
         // Response Size Limit (optional, defaults to 10000 bytes)
         "REST_RESPONSE_SIZE_LIMIT": "10000", // Maximum response size in bytes
+        // File Upload Size Limit (optional, defaults to 10485760 bytes = 10MB)
+        "FILE_UPLOAD_SIZE_LIMIT": "52428800", // Maximum file upload size in bytes (50MB)
         // Custom Headers (optional)
         "HEADER_X-API-Version": "2.0",
         "HEADER_Custom-Client": "my-client",
@@ -126,6 +128,8 @@ Add to `~/Library/Application Support/Code/User/globalStorage/saoudrizwan.claude
         "AUTH_APIKEY_VALUE": "your-api-key",
         // SSL Verification (enabled by default)
         "REST_ENABLE_SSL_VERIFY": "false", // Set to false to disable SSL verification for self-signed certificates
+        // File Upload Size Limit (optional, defaults to 10485760 bytes = 10MB)
+        "FILE_UPLOAD_SIZE_LIMIT": "52428800", // Maximum file upload size in bytes (50MB)
         // Custom Headers (optional)
         "HEADER_X-API-Version": "2.0",
         "HEADER_Custom-Client": "my-client",
@@ -145,6 +149,13 @@ Note: Replace the environment variables with your actual values. Only configure 
 
 - Test REST API endpoints with different HTTP methods
 - Support for GET, POST, PUT, DELETE, and PATCH requests
+- **File Upload Support**:
+  - Upload single or multiple files in one request
+  - Multipart/form-data encoding
+  - Customizable field names, filenames, and content types
+  - Combined file + form field uploads
+  - Configurable file size limits (default: 10MB per file)
+  - Path traversal protection for security
 - Detailed response information including status, headers, and body
 - Custom Headers:
   - Global headers via HEADER_* environment variables
@@ -195,6 +206,34 @@ use_mcp_tool('rest-api', 'test_request', {
   "headers": {
     "Accept-Language": "en-US",
     "X-Custom-Header": "custom-value"
+  }
+});
+
+// Upload a file
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/upload",
+  "files": [
+    {
+      "fieldName": "avatar",
+      "filePath": "./profile-pic.jpg"
+    }
+  ]
+});
+
+// Upload multiple files with form fields
+use_mcp_tool('rest-api', 'test_request', {
+  "method": "POST",
+  "endpoint": "/posts",
+  "files": [
+    {
+      "fieldName": "thumbnail",
+      "filePath": "./image.png"
+    }
+  ],
+  "formFields": {
+    "title": "My Post",
+    "description": "Post description"
   }
 });
 ```
