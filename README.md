@@ -1,3 +1,35 @@
+
+<div align="right">
+  <details>
+    <summary >🌐 Language</summary>
+    <div>
+      <div align="center">
+        <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=en">English</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=zh-CN">简体中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=zh-TW">繁體中文</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=ja">日本語</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=ko">한국어</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=hi">हिन्दी</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=th">ไทย</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=fr">Français</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=de">Deutsch</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=es">Español</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=it">Italiano</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=ru">Русский</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=pt">Português</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=nl">Nederlands</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=pl">Polski</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=ar">العربية</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=fa">فارسی</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=tr">Türkçe</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=vi">Tiếng Việt</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=id">Bahasa Indonesia</a>
+        | <a href="https://openaitx.github.io/view.html?user=dkmaker&project=mcp-rest-api&lang=as">অসমীয়া</
+      </div>
+    </div>
+  </details>
+</div>
+
 # MCP REST API Tester
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![NPM Package](https://img.shields.io/npm/v/dkmaker-mcp-rest-api.svg)](https://www.npmjs.com/package/dkmaker-mcp-rest-api)
